@@ -1,0 +1,15 @@
+{
+  "name": "agentic-e2e-test-workflow",
+  "owner": {
+    "name": "Théo Carranza"
+  },
+  "description": "Marketplace for the Maestro E2E Agentic Workflow",
+  "plugins": [
+    {
+      "name": "maestro-e2e-workflow",
+      "source": "./maestro-e2e-plugin",
+      "description": "Autonomous Agentic orchestrator for Maestro E2E UI testing.",
+      "version": "0.1.0"
+    }
+  ]
+}
