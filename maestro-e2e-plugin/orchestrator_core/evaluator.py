@@ -44,25 +44,8 @@ def evaluate_maestro_flow(content: str, file_path: str = None) -> List[str]:
     if critiques:
         return critiques
 
-    # Phase 4: Execution Harness Integration
-    if file_path:
-        import subprocess
-        try:
-            print(f"[*] Running physical Maestro test harness for {file_path}...")
-            # In a real environment, this invokes the test runner against the emulator.
-            # E.g., `npm run test:e2e:android` or direct `maestro test`
-            result = subprocess.run(
-                ["maestro", "test", file_path],
-                capture_output=True,
-                text=True,
-                timeout=120
-            )
-            if result.returncode != 0:
-                raise Exception(f"Maestro physical execution failed:\n{result.stderr}")
-        except FileNotFoundError:
-            print("[!] Maestro CLI not installed. Skipping live execution gate (Dry-Run Mode).")
-        except subprocess.TimeoutExpired:
-            critiques.append("Test timed out after 120s. Is the emulator running and responsive?")
+    # Execution is now strictly delegated to Stage 4 (Execution & Healing).
+    # We only do static YAML validation here if needed.
             
     return critiques
 
