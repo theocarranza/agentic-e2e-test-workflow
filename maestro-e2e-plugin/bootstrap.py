@@ -89,6 +89,20 @@ def main():
         register_claude_plugin(source_dir)
     if args.target in ("codex", "all-agents"):
         register_codex(source_dir)
+        
+    print("\n[*] Installing global CLI wrapper (maestro-e2e)...")
+    bin_dir = Path.home() / ".local" / "bin"
+    bin_dir.mkdir(parents=True, exist_ok=True)
+    wrapper_path = bin_dir / "maestro-e2e"
+    
+    plugin_path = Path.home() / ".gemini" / "config" / "plugins" / "maestro-e2e-workflow"
+    bash_script = f"""#!/usr/bin/env bash
+export PYTHONPATH="{plugin_path}"
+exec python3 -m orchestrator_core.main "$@"
+"""
+    wrapper_path.write_text(bash_script, encoding="utf-8")
+    wrapper_path.chmod(0o755)
+    print(f"    -> Installed executable wrapper to {wrapper_path}")
     
     print("\n========================================")
     print(" Installation Complete!")
