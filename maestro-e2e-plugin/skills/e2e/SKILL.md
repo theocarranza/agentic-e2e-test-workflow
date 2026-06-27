@@ -17,9 +17,9 @@ You are the **Orchestrator Agent**. Your job is to manage the E2E Maestro test g
 When the user invokes this skill, execute the following loop:
 
 ### Step 1: Route and Prepare (The Orchestrator)
-1. Run the local Python engine to determine the next missing artifact and compile the prompt context:
+1. Run the local engine to determine the next missing artifact and compile the prompt context:
    ```bash
-   python3 -m orchestrator_core.main --module <module_name>
+   maestro-e2e --module <module_name>
    ```
 2. The engine will analyze the workspace, detect the missing stage (e.g., `stage_0`), and compile the full system prompt (context + checklists) into the `.agentic/e2e_prompts/` directory (or output it directly).
 
@@ -30,9 +30,9 @@ When the user invokes this skill, execute the following loop:
 4. Pass the compiled prompt as the sub-agent's instruction. Tell the sub-agent to strictly follow the prompt, save the output file to the exact path specified, and report back when finished.
 
 ### Step 3: Evaluate and Cascade (The Quality Gate)
-1. When the sub-agent reports completion, evaluate the artifact using the local Python evaluator:
+1. When the sub-agent reports completion, evaluate the artifact using the local evaluator:
    ```bash
-   python3 -c "from orchestrator_core.evaluator import evaluate_artifact; print(evaluate_artifact('stage_0', open('path/to/artifact.md').read()))"
+   maestro-e2e evaluate --stage <stage_name> --file <path/to/artifact.md>
    ```
 2. If the evaluator returns critiques (FAIL):
    - Use `send_message` to send the critiques back to the sub-agent, instructing it to fix the file and resubmit.

@@ -98,7 +98,13 @@ def main():
     plugin_path = Path.home() / ".gemini" / "config" / "plugins" / "maestro-e2e-workflow"
     bash_script = f"""#!/usr/bin/env bash
 export PYTHONPATH="{plugin_path}"
-exec python3 -m orchestrator_core.main "$@"
+
+if [ "$1" == "evaluate" ]; then
+    shift
+    exec python3 -m orchestrator_core.evaluator "$@"
+else
+    exec python3 -m orchestrator_core.main "$@"
+fi
 """
     wrapper_path.write_text(bash_script, encoding="utf-8")
     wrapper_path.chmod(0o755)
