@@ -66,6 +66,14 @@ def evaluate_maestro_flow(content: str, file_path: str = None) -> List[str]:
             
     return critiques
 
+def evaluate_stage_4(content: str) -> List[str]:
+    critiques = []
+    if "Execution & Healing Report" not in content:
+        critiques.append("The document must include a title 'Execution & Healing Report'.")
+    if "**Status**:" not in content:
+        critiques.append("The document must contain a '**Status**: [PASS | HEALED | FATAL]' field.")
+    return critiques
+
 def evaluate_artifact(stage_id: str, content: str, file_path: str = None) -> List[str]:
     """
     Evaluates the LLM generated artifact against the strict checklists for that stage.
@@ -79,6 +87,8 @@ def evaluate_artifact(stage_id: str, content: str, file_path: str = None) -> Lis
         return evaluate_blueprint(content)
     elif stage_id == "stage_3":
         return evaluate_maestro_flow(content, file_path)
+    elif stage_id == "stage_4":
+        return evaluate_stage_4(content)
     return ["Unknown stage_id for evaluation."]
 
 if __name__ == "__main__":

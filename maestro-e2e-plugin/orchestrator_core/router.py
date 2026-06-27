@@ -17,6 +17,8 @@ def get_artifact_path(target: WorkflowTarget, stage_id: str, base_dir: str = "e2
         return base / "scenarios" / f / "blueprint.md"
     elif stage_id == "stage_3":
         return base / "scenarios" / f / f"{f}.flow.yaml"
+    elif stage_id == "stage_4":
+        return base / "scenarios" / f / "execution-report.md"
     
     raise ValueError(f"Unknown stage_id: {stage_id}")
 
@@ -27,7 +29,7 @@ def get_mtime(path: Path) -> float:
 def resolve_routing(state: QueueState, base_dir: str = "e2e_test") -> Event:
     """
     Evaluates the artifact drift based on the orchestrator logic:
-    1. Check for artifact existence in order 0 -> 3.
+    1. Check for artifact existence in order 0 -> 4.
     2. Dispatch TaskSpawnedEvent for the first missing artifact (mode: NOVO).
     3. Or dispatch for the first outdated artifact (mode: ATUALIZACAO).
     """
@@ -38,6 +40,7 @@ def resolve_routing(state: QueueState, base_dir: str = "e2e_test") -> Event:
         "stage_1": get_artifact_path(target, "stage_1", base_dir),
         "stage_2": get_artifact_path(target, "stage_2", base_dir),
         "stage_3": get_artifact_path(target, "stage_3", base_dir),
+        "stage_4": get_artifact_path(target, "stage_4", base_dir),
     }
     
     mtimes = {stage: get_mtime(path) for stage, path in paths.items()}
@@ -84,5 +87,15 @@ def resolve_routing(state: QueueState, base_dir: str = "e2e_test") -> Event:
     if mtimes["stage_3"] < mtimes["stage_2"]:
         return Event(type="TaskSpawnedEvent", payload={"task_id": "stage_3", "mode": StageMode.ATUALIZACAO.value})
         
-    # If everything is up to date, the pipeline is ready for E2E validation execution!
+    # ---------------------------------------------------------
+    # Stage 4: Execution & Self-Healing
+    # ---------------------------------------------------------
+    if mtimes["stage_4"] == 0:
+        return Event(type="TaskSpawnedEvent", payload={"task_id": "stage_4", "mode": StageMode.NOVO.value})
+    if (Path.cwd() / ".agentic" / "e2e_prompts" / "stage_4.error.log").exists():
+        return Event(type="TaskSpawnedEvent", payload={"task_id": "stage_4", "mode": "correcao"})
+    if mtimes["stage_4"] < mtimes["stage_3"]:
+        return Event(type="TaskSpawnedEvent", payload={"task_id": "stage_4", "mode": StageMode.ATUALIZACAO.value})
+        
+    # If everything is up to date, the pipeline is fully complete!
     return Event(type="PipelineUpToDateEvent", payload={"module": target.module, "flow": target.flow})

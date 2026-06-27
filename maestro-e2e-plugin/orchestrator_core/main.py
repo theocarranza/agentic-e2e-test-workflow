@@ -11,12 +11,13 @@ def init_workflow(module: str, flow: str = None, dry_run: bool = False, manual: 
         approval_mode="manual" if manual else "auto"
     )
     
-    # Define the 4 strict pipeline stages as dependencies
+    # Define the 5 strict pipeline stages as dependencies
     tasks = {
         "stage_0": Task(id="stage_0", skill_name="domain_discovery", dependencies=[]),
         "stage_1": Task(id="stage_1", skill_name="test_plan_author", dependencies=["stage_0"]),
         "stage_2": Task(id="stage_2", skill_name="widget_blueprint", dependencies=["stage_1"]),
         "stage_3": Task(id="stage_3", skill_name="maestro_implementer", dependencies=["stage_2"]),
+        "stage_4": Task(id="stage_4", skill_name="execution_and_healing", dependencies=["stage_3"]),
     }
     
     # We pass an empty event list initially
