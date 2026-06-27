@@ -1,0 +1,12 @@
+# Descrição: Seleciona um estudante na lista e aguarda a página de detalhes.
+# Pré-condições: Usuário deve estar na lista de estudantes.
+# Racional de seletores:
+#   - STUDENT_SEMANTICS_ID identifica o item dinâmico de forma estável.
+#   - student_start_attendance_button confirma que a página de detalhes foi carregada.
+# Entradas (env): STUDENT_SEMANTICS_ID.
+appId: life.bhave.aplicatudo.local
+---
+- tapOn:
+    id: "${STUDENT_SEMANTICS_ID}"
+- assertVisible:
+    id: "student_start_attendance_button"

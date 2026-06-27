@@ -1,0 +1,20 @@
+# Descrição: Navega para a aba Anotações, digita uma anotação e envia.
+# Pré-condições: Deve estar na página de atendimento em andamento.
+# Racional de seletores: IDs semânticos no campo de anotação, botão de envio e aba.
+# Entradas (env): NOTE_TEXT.
+appId: life.bhave.aplicatudo.local
+---
+# Confirma que a aba Anotações está visível antes do toque.
+- assertVisible:
+    id: "ongoing_attendance_tab_3"
+- tapOn:
+    id: "ongoing_attendance_tab_3"
+- tapOn:
+    id: "attendance_note_input"
+- inputText: ${NOTE_TEXT}
+- hideKeyboard
+- tapOn:
+    id: "attendance_note_send"
+# Confirma que a anotação apareceu na lista da sessão.
+- assertVisible:
+    text: ${NOTE_TEXT}

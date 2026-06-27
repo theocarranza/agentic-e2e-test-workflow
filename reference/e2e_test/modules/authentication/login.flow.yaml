@@ -1,0 +1,14 @@
+# Descrição: Jornada de login (US #6871).
+# Pré-condições: App deve estar na tela de login.
+# Racional de seletores: Login é o assunto do teste, então permanece no corpo do flow.
+# Entradas (env): EMAIL, PASSWORD.
+appId: life.bhave.aplicatudo.local
+onFlowStart:
+  - runFlow: ../common/subflows/launch_clean.subflow.yaml
+env:
+  EMAIL: criador@beta.bhave.life
+  PASSWORD: "123456"
+tags:
+  - android
+---
+- runFlow: ../common/subflows/login.subflow.yaml

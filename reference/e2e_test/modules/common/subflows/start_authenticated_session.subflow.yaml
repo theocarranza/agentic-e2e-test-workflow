@@ -1,0 +1,8 @@
+# Descrição: Inicialização limpa + login para flows cuja jornada começa pós-autenticação.
+# Pré-condições: App instalado e emulador pronto.
+# Racional de seletores: Helper composto que chama launch_clean.subflow e login.subflow.
+# Entradas (env): EMAIL, PASSWORD herdados do flow chamador.
+appId: life.bhave.aplicatudo.local
+---
+- runFlow: launch_clean.subflow.yaml
+- runFlow: login.subflow.yaml

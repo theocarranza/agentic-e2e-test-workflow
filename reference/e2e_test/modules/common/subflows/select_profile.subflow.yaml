@@ -1,0 +1,15 @@
+# Descrição: Seleciona o perfil/workgroup reutilizável.
+# Pré-condições: Usuário logado e na tela de seleção de tipo de acesso.
+# Racional de seletores:
+#   - Regex DOTALL para o nome do perfil porque o Flutter pode mesclar o ListTile em um nó único.
+#   - Sucesso é verificado pela chegada à lista de estudantes, não pelo desaparecimento do perfil.
+# Entradas (env): PROFILE_NAME.
+appId: life.bhave.aplicatudo.local
+---
+# Seleciona o perfil.
+- tapOn:
+    text: "(?s).*${PROFILE_NAME}.*"
+- extendedWaitUntil:
+    visible:
+      id: "students_page"
+    timeout: 30000

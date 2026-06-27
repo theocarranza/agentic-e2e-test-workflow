@@ -1,0 +1,23 @@
+# Descrição: Verifica a anotação persistida na página de detalhes do atendimento finalizado.
+# Pré-condições: Deve estar na página de detalhes do atendimento.
+# Racional de seletores:
+#   - A aba Anotações pode ficar fora da viewport; cada swipe avança o controlador de abas.
+#   - Swipe enquanto NOTE_TEXT não estiver visível (state-driven), limitado a 4 tentativas, para
+#     não depender de um número fixo de abas que pode mudar.
+#   - O texto da anotação vem do env e confirma persistência do dado registrado.
+# Entradas (env): NOTE_TEXT.
+appId: life.bhave.aplicatudo.local
+---
+# Avança as abas até a anotação aparecer, parando assim que ela ficar visível.
+- repeat:
+    times: 4
+    while:
+      notVisible:
+        text: ${NOTE_TEXT}
+    commands:
+      - swipe:
+          start: "80%, 50%"
+          end: "20%, 50%"
+          duration: 300
+- assertVisible:
+    text: ${NOTE_TEXT}

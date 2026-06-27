@@ -1,0 +1,9 @@
+# Descrição: Política de ciclo de vida do app para hooks onFlowStart.
+# Pré-condições: Emulador iniciado.
+# Racional de seletores: Usa o comando nativo launchApp com clearState.
+# Entradas (env): nenhuma.
+appId: life.bhave.aplicatudo.local
+---
+- launchApp:
+    clearState: true
+    stopApp: true

@@ -1,0 +1,22 @@
+# Descrição: Subfluxo reutilizável de autenticação.
+# Pré-condições: App deve estar na tela de login.
+# Racional de seletores:
+#   - IDs semânticos garantem estabilidade.
+#   - O teclado é ocultado antes da submissão para manter o botão visível.
+# Entradas (env): EMAIL, PASSWORD.
+appId: life.bhave.aplicatudo.local
+---
+# Preenche as credenciais.
+- tapOn:
+    id: "login_email_field"
+- inputText: ${EMAIL}
+- tapOn:
+    id: "login_password_field"
+- inputText: ${PASSWORD}
+
+# Oculta o teclado antes de submeter.
+- hideKeyboard
+
+# Aciona a submissão.
+- tapOn:
+    id: "login_submit_button"

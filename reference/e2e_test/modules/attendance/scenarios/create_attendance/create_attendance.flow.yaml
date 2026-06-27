@@ -1,0 +1,24 @@
+# Descrição: Caminho feliz de criação de atendimento, da sessão autenticada à nota finalizada.
+# Pré-condições: App instalado e emuladores em execução.
+# Racional de seletores: Orquestra subfluxos estáveis de sessão, seleção e atendimento.
+# Entradas (env): EMAIL, PASSWORD, PROFILE_NAME, STUDENT_NAME, STUDENT_SEMANTICS_ID, NOTE_TEXT.
+appId: life.bhave.aplicatudo.local
+onFlowStart:
+  - runFlow: ../../../common/subflows/start_authenticated_session.subflow.yaml
+env:
+  EMAIL: "criador@beta.bhave.life"
+  PASSWORD: "123456"
+  PROFILE_NAME: "Instituto Beta"
+  STUDENT_NAME: "Breno Segundo"
+  STUDENT_SEMANTICS_ID: "student_list_tile_breno_segundo"
+  NOTE_TEXT: "Nota de atendimento"
+tags:
+  - android
+  - composed
+---
+- runFlow: ../../../common/subflows/select_profile.subflow.yaml
+- runFlow: ../../../common/subflows/select_student.subflow.yaml
+- runFlow: ../../subflows/start_wizard.subflow.yaml
+- runFlow: ../../subflows/add_attendance_note.subflow.yaml
+- runFlow: ../../subflows/finalize_attendance.subflow.yaml
+- runFlow: ../../subflows/verify_finalized_attendance_note.subflow.yaml

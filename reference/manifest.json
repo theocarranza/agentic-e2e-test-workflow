@@ -1,0 +1,24 @@
+{
+  "name": "dart-ast-refactor",
+  "version": "1.0.0",
+  "description": "Analyzes and refactors Dart source code using pure functional transformations.",
+  "inputs": {
+    "target_file": { "type": "string", "description": "The relative path to the Dart file" },
+    "goal": { "type": "string", "description": "The refactoring objective" }
+  },
+  "outputs": {
+    "artifact_path": { "type": "string", "description": "The path to the generated diff or file" },
+    "summary": { "type": "string", "description": "A concise report on the change" }
+  },
+  "tools": [
+    {
+      "name": "ast_parser",
+      "executable": "tools/ast_parser.sh",
+      "description": "Parses Dart files into a structural representation for analysis.",
+      "parameters": {
+        "file_path": { "type": "string" }
+      }
+    }
+  ],
+  "authoritative_instructions": "instructions.md"
+}

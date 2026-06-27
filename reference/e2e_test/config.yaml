@@ -1,0 +1,33 @@
+# Configuração do workspace Maestro para a suíte E2E do Aplicatudo.
+#
+# Execute via: npm run test:e2e:android (a partir de projects/aplicatudo), que reutiliza ou inicia
+# um emulador Android, sobe o Firebase Local Emulator Suite, instala o APK do flavor local e então
+# executa todos os flows encontrados aqui.
+#
+# flows usa glob apenas em *.flow.yaml — pontos de entrada dos testes — portanto subflows reutilizáveis
+# (nomeados *.subflow.yaml, invocados via runFlow) NÃO são executados como testes independentes.
+# Novos fluxos de módulo são detectados automaticamente.
+#
+# Cada fluxo de cenário é responsável por sua jornada completa (sessão + corpo). A suíte (full_journey)
+# é o ponto de entrada canônico que compõe esses fluxos de cenário via runFlow. Para evitar executar
+# um cenário composto duas vezes (uma vez de forma independente via glob, outra dentro da suíte), todo
+# fluxo de cenário composto pela suíte recebe a tag `composed` e é filtrado da execução independente
+# via excludeTags. Fluxos independentes que a suíte NÃO compõe (ex.: login) ficam sem tag e rodam
+# por conta própria.
+flows:
+  - "modules/**/*.flow.yaml"
+excludeTags:
+  - composed
+# executionOrder: executa primeiro os fluxos independentes (determinísticos, com controle de
+# dependências), depois a suíte composta por último. continueOnFailure:true mantém a sequência mesmo
+# em caso de falha — uma falha em um fluxo não interrompe os demais. Identity = nome do arquivo
+# sem .yaml.
+# create_attendance está ausente aqui: tem a tag `composed`, então só executa dentro de full_journey.
+executionOrder:
+  continueOnFailure: true
+  flowsOrder:
+    - login
+    - full_journey
+# Tags `small` / `medium` / `large` identificam cenários específicos por breakpoint de tela. Para
+# rodar apenas um subconjunto, use as flags de tag do runner em tempo de execução
+# (ex.: --include-tags large) — não exclua tamanhos diretamente neste arquivo.

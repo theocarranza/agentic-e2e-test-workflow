@@ -1,0 +1,37 @@
+# Descrição: Inicia o wizard de atendimento a partir da página de detalhes do estudante.
+# Pré-condições: Usuário deve estar na página de detalhes do estudante.
+# Racional de seletores:
+#   - IDs semânticos nos botões do wizard garantem estabilidade durante o fluxo de múltiplas etapas.
+# Entradas (env): nenhuma.
+appId: life.bhave.aplicatudo.local
+---
+# 1. Aciona o botão principal de iniciar atendimento na página do estudante.
+- tapOn:
+    id: "student_start_attendance_button"
+
+# 2. Confirma os dados iniciais quando a etapa de localização estiver presente.
+- runFlow:
+    when:
+      visible:
+        id: "new_attendance_check_next"
+    commands:
+      - tapOn:
+          id: "new_attendance_check_next"
+
+# 3. Avança sem selecionar folhas estruturadas.
+- tapOn:
+    id: "new_attendance_structured_next"
+
+# 4. Avança sem selecionar comportamentos de aquisição.
+- tapOn:
+    id: "new_attendance_free_operand_next"
+
+# 5. Finaliza o wizard para entrar na sessão em andamento.
+- tapOn:
+    id: "new_attendance_start_button"
+
+# 6. Confirma que a sessão em andamento carregou.
+- extendedWaitUntil:
+    visible:
+      id: "ongoing_attendance_finalize_button"
+    timeout: 60000

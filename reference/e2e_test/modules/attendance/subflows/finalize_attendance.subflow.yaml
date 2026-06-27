@@ -1,0 +1,15 @@
+# Descrição: Aciona a finalização do atendimento e confirma o diálogo.
+# Pré-condições: Deve estar na página de atendimento em andamento com registros.
+# Racional de seletores: IDs semânticos no botão de finalizar e no botão de confirmação.
+# Entradas (env): nenhuma.
+appId: life.bhave.aplicatudo.local
+---
+- tapOn:
+    id: "ongoing_attendance_finalize_button"
+- tapOn:
+    id: "attendance_finalize_confirm"
+# Aguarda a navegação para a página de detalhes do atendimento.
+- extendedWaitUntil:
+    visible:
+      id: "attendance_details_page_title"
+    timeout: 60000

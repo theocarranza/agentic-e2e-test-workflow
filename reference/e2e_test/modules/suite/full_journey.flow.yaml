@@ -1,0 +1,11 @@
+# Descrição: Entrada padrão da suíte E2E. Compõe a jornada completa de testes da aplicaçãp
+# Pré-condições: App instalado; Firebase Emulators rodando com Golden Seed.
+# Racional de seletores: Delega aos flows de cenário, que orquestram seus próprios subfluxos.
+appId: life.bhave.aplicatudo.local
+tags:
+  - suite
+  - android
+---
+# Por enquanto o atendimento é o único cenário; a suíte roda o flow do cenário diretamente.
+# Cada flow de cenário declara seu próprio onFlowStart (sessão) e env.
+- runFlow: ../attendance/scenarios/create_attendance/create_attendance.flow.yaml

@@ -1,0 +1,17 @@
+# Descrição: Retorna para a lista de estudantes entre jornadas encadeadas.
+# Pré-condições: Usuário deve estar em uma página empilhada acima da lista de estudantes.
+# Racional de seletores: students_page identifica semanticamente a tela de destino.
+# Entradas (env): nenhuma.
+appId: life.bhave.aplicatudo.local
+---
+- repeat:
+    times: 6
+    while:
+      notVisible:
+        id: "students_page"
+    commands:
+      - back
+- extendedWaitUntil:
+    visible:
+      id: "students_page"
+    timeout: 10000
