@@ -99,12 +99,8 @@ def main():
     bash_script = f"""#!/usr/bin/env bash
 export PYTHONPATH="{plugin_path}"
 
-if [ "$1" == "evaluate" ]; then
-    shift
-    exec python3 -m orchestrator_core.evaluator "$@"
-else
-    exec python3 -m orchestrator_core.main "$@"
-fi
+# evaluate is a main.py subcommand; route all args through the orchestrator CLI.
+exec python3 -m orchestrator_core.main "$@"
 """
     wrapper_path.write_text(bash_script, encoding="utf-8")
     wrapper_path.chmod(0o755)

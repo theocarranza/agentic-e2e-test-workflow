@@ -17,7 +17,8 @@ def get_stage_prompt_file(stage_id: str, prompts_dir: Path) -> Path:
         "stage_0": "0-domain-discovery.prompt.md",
         "stage_1": "1-test-plan-author.prompt.md",
         "stage_2": "2-widget-blueprint.prompt.md",
-        "stage_3": "3-maestro-implementer.prompt.md"
+        "stage_3": "3-maestro-implementer.prompt.md",
+        "stage_4": "4-execution-and-healing.prompt.md",  # F1
     }
     if stage_id not in mapping:
         raise ValueError(f"Unknown stage: {stage_id}")
@@ -112,6 +113,16 @@ def build_stage_context(target: WorkflowTarget, stage_id: str, mode: str, prompt
         context_blocks.append(load_file_content(test_plan_path))
         context_blocks.append("--- INPUT: WIDGET BLUEPRINT (blueprint.md) ---")
         context_blocks.append(load_file_content(blueprint_path))
+
+    elif stage_id == "stage_4":
+        # Flow by path (Stage 4 edits on disk during healing); upstream artifacts consultable.
+        flow_path = get_artifact_path(target, "stage_3", workspace_dir)
+        context_blocks.append("--- INPUT: TARGET FLOW (path) ---")
+        context_blocks.append(str(flow_path))
+        context_blocks.append("--- INPUT: WIDGET BLUEPRINT (blueprint.md) ---")
+        context_blocks.append(load_file_content(get_artifact_path(target, "stage_2", workspace_dir)))
+        context_blocks.append("--- INPUT: TEST PLAN (test-plan.md) ---")
+        context_blocks.append(load_file_content(get_artifact_path(target, "stage_1", workspace_dir)))
 
     # Combine into a final prompt payload
     final_prompt = (

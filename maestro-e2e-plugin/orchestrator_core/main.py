@@ -1,5 +1,6 @@
 import argparse
-from .state import WorkflowTarget, QueueState, Task, TaskState, StageMode
+import sys
+from .state import WorkflowTarget, QueueState, Task
 from .stream import OrchestratorStream
 from .hooks import cli_ui_hook
 
@@ -23,16 +24,7 @@ def init_workflow(module: str, flow: str = None, dry_run: bool = False, manual: 
     # We pass an empty event list initially
     return QueueState(target=target, tasks=tasks)
 
-def main():
-    parser = argparse.ArgumentParser(description="Agentic E2E Orchestrator (Maestro)")
-    parser.add_argument("--init", action="store_true", help="Scaffold E2E infrastructure in the current project")
-    parser.add_argument("--module", required=False, help="Target module (e.g., 'attendance')")
-    parser.add_argument("--flow", help="Specific business flow (e.g., 'archive student')")
-    parser.add_argument("--dry-run", action="store_true", help="Run without side effects or disk mutability")
-    parser.add_argument("--manual", action="store_true", help="Pause for manual checklist approvals")
-    
-    args = parser.parse_args()
-    
+def run_orchestrator(args) -> None:
     if args.init:
         from .init_scaffold import scaffold_workspace
         from pathlib import Path
@@ -40,7 +32,7 @@ def main():
         return
         
     if not args.module:
-        parser.error("--module is required when not using --init")
+        raise SystemExit("error: --module is required when not using --init")
     
     # 1. Initialize State Machine
     initial_state = init_workflow(args.module, args.flow, args.dry_run, args.manual)
@@ -87,5 +79,50 @@ def main():
         # Kick off the cascade!
         stream.dispatch(routing_event)
 
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Agentic E2E Orchestrator (Maestro)")
+    subparsers = parser.add_subparsers(dest="command")
+
+    evaluate_parser = subparsers.add_parser(
+        "evaluate",
+        help="Run the quality gate for a stage artifact (F11/F10)",
+    )
+    evaluate_parser.add_argument(
+        "--stage",
+        required=True,
+        help="Stage ID (stage_0..stage_4)",
+    )
+    evaluate_parser.add_argument(
+        "--file",
+        required=True,
+        help="Path to the artifact file",
+    )
+
+    # Legacy / default orchestration surface remains valid without a subcommand.
+    parser.add_argument("--init", action="store_true", help="Scaffold E2E infrastructure in the current project")
+    parser.add_argument("--module", required=False, help="Target module (e.g., 'attendance')")
+    parser.add_argument("--flow", help="Specific business flow (e.g., 'archive student')")
+    parser.add_argument("--dry-run", action="store_true", help="Run without side effects or disk mutability")
+    parser.add_argument("--manual", action="store_true", help="Pause for manual checklist approvals")
+    return parser
+
+def main(argv=None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+
+    if args.command == "evaluate":
+        from .evaluator import run_evaluate_cli
+        return run_evaluate_cli(args.stage, args.file)
+
+    try:
+        run_orchestrator(args)
+    except SystemExit as exc:
+        # Preserve argparse-style errors from run_orchestrator
+        code = exc.code if isinstance(exc.code, int) else 1
+        if isinstance(exc.code, str):
+            print(exc.code, file=sys.stderr)
+        return code or 0
+    return 0
+
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
