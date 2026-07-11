@@ -1,6 +1,6 @@
 {
   "name": "maestro-e2e-workflow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Agentic E2E workflow orchestrator for Maestro & Flutter. Discovers domain, plans tests, inspects UI widgets, and builds resilient Maestro flows using an Orchestrator-Worker sub-agent pattern.",
   "author": {
     "name": "E2E Maestro Plugin"

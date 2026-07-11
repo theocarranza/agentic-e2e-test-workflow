@@ -74,39 +74,43 @@ def evaluate_artifact(stage_id: str, content: str, file_path: str = None) -> Lis
         return evaluate_stage_4(content)
     return ["Unknown stage_id for evaluation."]
 
+
+def run_evaluate_cli(stage: str, file_path: str) -> int:
+    """
+    Imperative evaluate gate (F11/F10):
+    PASS ⇒ clear error.log, exit 0; FAIL ⇒ write critiques to error.log, exit 1.
+    """
+    from pathlib import Path
+
+    path = Path(file_path)
+    if not path.exists():
+        print(f"File {path} does not exist.")
+        return 1
+
+    content = path.read_text(encoding="utf-8")
+    mailbox = Path.cwd() / ".agentic" / "e2e_prompts"
+    mailbox.mkdir(parents=True, exist_ok=True)
+    error_log = mailbox / f"{stage}.error.log"
+
+    critiques = evaluate_artifact(stage, content, str(path))
+    if critiques:
+        message = "Quality Gate Failed:\n" + "\n".join(critiques)
+        print(f"[!] Quality Gate Failed for {stage}!")
+        print(message)
+        error_log.write_text(message, encoding="utf-8")
+        return 1
+
+    print(f"[+] Quality Gate Passed for {stage}!")
+    error_log.unlink(missing_ok=True)
+    return 0
+
+
 if __name__ == "__main__":
     import argparse
-    from pathlib import Path
     import sys
-    
+
     parser = argparse.ArgumentParser(description="Evaluate a specific E2E artifact stage.")
     parser.add_argument("--stage", required=True, help="Stage ID (e.g., stage_3)")
     parser.add_argument("--file", required=True, help="Path to the artifact file")
-    
     args = parser.parse_args()
-    
-    path = Path(args.file)
-    if not path.exists():
-        print(f"File {path} does not exist.")
-        sys.exit(1)
-        
-    content = path.read_text(encoding="utf-8")
-    
-    mailbox = Path.cwd() / ".agentic" / "e2e_prompts"
-    mailbox.mkdir(parents=True, exist_ok=True)
-    error_log = mailbox / f"{args.stage}.error.log"
-    
-    try:
-        critiques = evaluate_artifact(args.stage, content, str(path))
-        if critiques:
-            raise Exception("Quality Gate Failed:\n" + "\n".join(critiques))
-            
-        print(f"[+] Quality Gate Passed for {args.stage}!")
-        if error_log.exists():
-            error_log.unlink()
-        sys.exit(0)
-    except Exception as e:
-        print(f"[!] Quality Gate Failed for {args.stage}!")
-        print(str(e))
-        error_log.write_text(str(e))
-        sys.exit(1)
+    sys.exit(run_evaluate_cli(args.stage, args.file))

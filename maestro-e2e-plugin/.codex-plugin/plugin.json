@@ -1,6 +1,6 @@
 {
   "name": "maestro-e2e-workflow",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Orchestrates E2E test generation for Flutter using Maestro via an Orchestrator-Worker subagent pattern.",
   "author": {
     "name": "developer"
