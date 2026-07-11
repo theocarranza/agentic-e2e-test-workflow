@@ -1,0 +1,14 @@
+---
+name: pre_test
+description: Preflight check before running Maestro tests.
+---
+
+# Pre-Test Hook
+
+This hook runs before the E2E Maestro tests are kicked off. It verifies that the environment is sound.
+
+1. Ensure `package.json` exists in `functions/` (or that the tests are aware they are using Python).
+2. Ensure the `initial_data` (seed data) is available in the workspace.
+3. Validate that `flutter` and `maestro` are available.
+
+If any of these conditions fail, you MUST halt execution and notify the user before proceeding to the orchestrator.
