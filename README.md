@@ -2,6 +2,10 @@
 
 An autonomous, multi-agent orchestrator for generating, validating, and executing End-to-End UI tests using Maestro and Flutter. This tool bridges the gap between LLM agents (Antigravity, Claude Code, AI Codex) and the physical Android/iOS test harness.
 
+## Canonical engine location
+
+The orchestration runtime lives only at `maestro-e2e-plugin/orchestrator_core/`. There is no separate root-level `orchestrator_core/` copy.
+
 ## Features
 
 - **Harness-Agnostic**: Can be run by any major local AI agent through a simple mailbox (`.agentic/e2e_prompts/`) filesystem interface.

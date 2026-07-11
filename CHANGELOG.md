@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-07-11
+
+### Fixed
+- Stage-4 dispatch prompt mapping and context inputs (F1).
+- `maestro-e2e evaluate` quality-gate subcommand (F11).
+- `error.log` lifecycle: cleared on PASS so correcao loops can complete (F10).
+
+### Removed
+- Stale root `orchestrator_core/` copy; canonical engine is `maestro-e2e-plugin/orchestrator_core/` (F2, history-preserved).
+
 ## [0.1.0] - 2026-06-27
 
 ### Added
