@@ -3,6 +3,11 @@ from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("maestro")
 
+def _format_subprocess_failure(result: subprocess.CompletedProcess[str], action: str) -> str:
+    detail = (result.stderr or result.stdout or "unknown error").strip()
+    return f"Failed to {action} (exit {result.returncode}): {detail}"
+
+
 @mcp.tool()
 def boot_emulator(workspace_root: str) -> str:
     """
@@ -10,12 +15,14 @@ def boot_emulator(workspace_root: str) -> str:
     """
     try:
         result = subprocess.run(
-            ["bash", "e2e_test/scripts/e2e/lib-emulator.sh"],
+            ["bash", "e2e_test/scripts/e2e/boot-emulator.sh"],
             cwd=workspace_root,
             capture_output=True,
             text=True,
-            check=False
+            check=False,
         )
+        if result.returncode != 0:
+            return _format_subprocess_failure(result, "boot emulator")
         return "Emulator is ready."
     except Exception as e:
         return f"Failed to boot emulator: {str(e)}"
