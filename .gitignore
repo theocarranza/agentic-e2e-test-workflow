@@ -1,1 +1,12 @@
 __pycache__/
+
+# Runtime mailbox (ephemeral agent prompts / error logs)
+.agentic/
+**/.agentic/
+
+# Sample / local E2E run artifacts accidentally under the plugin package
+maestro-e2e-plugin/e2e_test/modules/
+
+# Obsidian workspace state (machine-local)
+**/.obsidian/workspace.json
+**/.obsidian/workspace-mobile.json

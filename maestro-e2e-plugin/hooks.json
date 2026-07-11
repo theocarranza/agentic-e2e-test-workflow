@@ -1,0 +1,7 @@
+{
+  "pre_test": "./hooks/pre_test.yaml",
+  "evaluator_gate": "python3 ./hooks/evaluator_gate.py",
+  "circuit_breaker": "python3 ./hooks/circuit_breaker.py",
+  "authorization": "python3 ./hooks/authorization.py",
+  "ledger_sync": "python3 ./hooks/ledger_sync.py"
+}
