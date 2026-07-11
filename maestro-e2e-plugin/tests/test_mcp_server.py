@@ -13,7 +13,7 @@ PLUGIN_ROOT = conftest.PLUGIN_ROOT
 SERVER_PATH = PLUGIN_ROOT / "maestro_mcp" / "server.py"
 
 
-def _load_boot_emulator():
+def _load_server_module():
     class FakeFastMCP:
         def __init__(self, _name):
             pass
@@ -44,7 +44,11 @@ def _load_boot_emulator():
     ):
         spec.loader.exec_module(server)
     sys.modules["maestro_mcp_server"] = server
-    return server.boot_emulator
+    return server
+
+
+def _load_boot_emulator():
+    return _load_server_module().boot_emulator
 
 
 def test_mcp_server_paths_do_not_shadow_dependency_package():
@@ -135,3 +139,32 @@ def test_boot_emulator_script_sources_library_and_calls_ensure(tmp_path):
 
     assert result.returncode == 0, result.stderr
     assert "booted" in result.stdout
+
+
+def test_dump_ui_hierarchy_uses_project_root_maestro_path(tmp_path):
+    server = _load_server_module()
+    maestro_bin = tmp_path / ".dart_tool" / "maestro" / "maestro" / "bin" / "maestro"
+    maestro_bin.parent.mkdir(parents=True, exist_ok=True)
+    maestro_bin.write_text("#!/bin/sh\necho hierarchy-output\n", encoding="utf-8")
+    maestro_bin.chmod(0o755)
+
+    result = server.dump_ui_hierarchy(str(tmp_path))
+
+    assert result.strip() == "hierarchy-output"
+
+
+def test_resolve_maestro_bin_does_not_use_e2e_test_dart_tool(tmp_path):
+    server = _load_server_module()
+    wrong = tmp_path / "e2e_test" / ".dart_tool" / "maestro" / "maestro" / "bin" / "maestro"
+    wrong.parent.mkdir(parents=True, exist_ok=True)
+    wrong.write_text("#!/bin/sh\necho wrong\n", encoding="utf-8")
+    wrong.chmod(0o755)
+
+    right = tmp_path / ".dart_tool" / "maestro" / "maestro" / "bin" / "maestro"
+    right.parent.mkdir(parents=True, exist_ok=True)
+    right.write_text("#!/bin/sh\necho right\n", encoding="utf-8")
+    right.chmod(0o755)
+
+    result = server.dump_ui_hierarchy(str(tmp_path))
+
+    assert result.strip() == "right"

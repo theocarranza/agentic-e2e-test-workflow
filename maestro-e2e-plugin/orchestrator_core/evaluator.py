@@ -34,11 +34,17 @@ def evaluate_blueprint(content: str) -> List[str]:
         critiques.append("Missing the Consolidated Semantics section.")
     return critiques
 
+def _strip_yaml_comments(content: str) -> str:
+    """Remove # line comments so substring checks cannot pass on commented placeholders."""
+    return re.sub(r"#.*$", "", content, flags=re.MULTILINE)
+
+
 def evaluate_maestro_flow(content: str, file_path: str = None) -> List[str]:
     critiques = []
-    if "appId:" not in content:
+    active = _strip_yaml_comments(content)
+    if "appId:" not in active:
         critiques.append("Missing 'appId:' declaration.")
-    if "launch_clean" not in content and "start_authenticated_session" not in content:
+    if "launch_clean" not in active and "start_authenticated_session" not in active:
         critiques.append("Missing required lifecycle subflow (launch_clean or start_authenticated_session).")
     
     # Fail fast if static checks fail

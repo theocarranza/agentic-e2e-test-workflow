@@ -1,7 +1,18 @@
 import subprocess
+from pathlib import Path
+
 from mcp.server.fastmcp import FastMCP
 
 mcp = FastMCP("maestro")
+
+
+def _resolve_maestro_bin(workspace_root: str) -> Path:
+    """Match lib-preflight.sh: Maestro is vendored under <project>/.dart_tool/maestro."""
+    maestro_root = Path(workspace_root) / ".dart_tool" / "maestro"
+    for candidate in maestro_root.glob("**/maestro/bin/maestro"):
+        if candidate.is_file():
+            return candidate
+    return maestro_root / "maestro" / "bin" / "maestro"
 
 
 def _format_subprocess_failure(
@@ -68,9 +79,7 @@ def run_maestro_flow(workspace_root: str, flow_filter: str = "") -> str:
 def dump_ui_hierarchy(workspace_root: str) -> str:
     """Capture the current UI hierarchy from the active emulator."""
     try:
-        maestro_bin = (
-            f"{workspace_root}/e2e_test/.dart_tool/maestro/maestro/bin/maestro"
-        )
+        maestro_bin = str(_resolve_maestro_bin(workspace_root))
         result = subprocess.run(
             [maestro_bin, "hierarchy"],
             cwd=workspace_root,
