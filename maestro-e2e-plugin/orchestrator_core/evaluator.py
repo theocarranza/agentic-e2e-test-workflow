@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 def evaluate_domain(content: str) -> List[str]:
@@ -53,8 +54,25 @@ def evaluate_stage_4(content: str) -> List[str]:
     critiques = []
     if "Execution & Healing Report" not in content:
         critiques.append("The document must include a title 'Execution & Healing Report'.")
-    if "**Status**:" not in content:
+
+    status_match = re.search(r"\*\*Status\*\*:\s*(.+)", content)
+    if not status_match:
         critiques.append("The document must contain a '**Status**: [PASS | HEALED | FATAL]' field.")
+        return critiques
+
+    raw_status = status_match.group(1).strip()
+    tokens = [t.strip().upper() for t in re.split(r"\|", raw_status.strip("[] ")) if t.strip()]
+    if len(tokens) != 1:
+        critiques.append(
+            "Status must be exactly PASS or HEALED (not the template placeholder or multiple values)."
+        )
+        return critiques
+
+    status = tokens[0]
+    if status == "FATAL":
+        critiques.append("Execution report status is FATAL; E2E must pass before stage_4 can complete.")
+    elif status not in ("PASS", "HEALED"):
+        critiques.append(f"Execution report status must be PASS or HEALED, got '{raw_status}'.")
     return critiques
 
 def evaluate_artifact(stage_id: str, content: str, file_path: str = None) -> List[str]:
