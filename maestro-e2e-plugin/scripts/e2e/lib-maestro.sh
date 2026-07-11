@@ -7,7 +7,8 @@
 #
 # Depends on lib-common.sh (log/fail/run_with_timeout, ROOT, MAESTRO_BIN/AVD_SERIAL).
 
-E2E_WORKSPACE="${E2E_WORKSPACE:-${ROOT}/e2e_test}"
+# Resolved in lib-common.sh for both legacy and scaffolded layouts.
+: "${E2E_WORKSPACE:?E2E_WORKSPACE must be set by lib-common.sh}"
 MAESTRO_TEST_TIMEOUT_SECONDS="${MAESTRO_TEST_TIMEOUT_SECONDS:-600}"
 
 # ---------------------------------------------------------------------------

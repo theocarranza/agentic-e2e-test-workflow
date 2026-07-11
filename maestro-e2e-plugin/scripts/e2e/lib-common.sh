@@ -11,11 +11,23 @@
 # ---------------------------------------------------------------------------
 # Path resolution
 # ---------------------------------------------------------------------------
-# ROOT          = projects/aplicatudo (parent of scripts/e2e)
-# MONOREPO_ROOT = repository root (firebase.json, .firebase_initial_data live here)
+# Legacy Aplicatudo layout: <monorepo>/projects/aplicatudo/scripts/e2e
+#   ROOT = Flutter app dir, MONOREPO_ROOT = monorepo root, E2E_WORKSPACE = ROOT/e2e_test
+# Scaffolded plugin layout: <project>/e2e_test/scripts/e2e (via maestro-e2e --init)
+#   ROOT = project root, MONOREPO_ROOT = project root, E2E_WORKSPACE = e2e_test/
 _LIB_COMMON_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT="${ROOT:-$(cd "${_LIB_COMMON_DIR}/../.." && pwd)}"
-MONOREPO_ROOT="${MONOREPO_ROOT:-$(cd "${ROOT}/../.." && pwd)}"
+_SCRIPTS_PARENT="$(cd "${_LIB_COMMON_DIR}/../.." && pwd)"
+
+if [[ "$(basename "$_SCRIPTS_PARENT")" == "e2e_test" ]]; then
+  E2E_WORKSPACE="${E2E_WORKSPACE:-$_SCRIPTS_PARENT}"
+  MONOREPO_ROOT="${MONOREPO_ROOT:-$(cd "${_SCRIPTS_PARENT}/.." && pwd)}"
+  ROOT="${ROOT:-$MONOREPO_ROOT}"
+else
+  ROOT="${ROOT:-$_SCRIPTS_PARENT}"
+  MONOREPO_ROOT="${MONOREPO_ROOT:-$(cd "${ROOT}/../.." && pwd)}"
+  E2E_WORKSPACE="${E2E_WORKSPACE:-${ROOT}/e2e_test}"
+fi
+export ROOT MONOREPO_ROOT E2E_WORKSPACE
 
 # ---------------------------------------------------------------------------
 # Lifecycle globals (shared with teardown — see lib-teardown.sh)
