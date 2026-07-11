@@ -1,57 +1,79 @@
 # Maestro E2E Orchestrator Plugin
 
-An autonomous, multi-agent orchestrator for generating, validating, and executing End-to-End UI tests using Maestro and Flutter. This tool bridges the gap between LLM agents (Antigravity, Claude Code, AI Codex) and the physical Android/iOS test harness.
+[![Release](https://img.shields.io/github/v/release/theocarranza/agentic-e2e-test-workflow?display_name=tag&sort=semver)](https://github.com/theocarranza/agentic-e2e-test-workflow/releases/latest)
+[![Python](https://img.shields.io/badge/python-3-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![Maestro](https://img.shields.io/badge/Maestro-E2E-00B4AB)](https://maestro.mobile.dev/)
+[![Flutter](https://img.shields.io/badge/Flutter-compatible-02569B?logo=flutter&logoColor=white)](https://flutter.dev/)
 
-## Canonical engine location
+Autonomous, multi-agent orchestration for generating, validating, and running Flutter UI E2E tests with [Maestro](https://maestro.mobile.dev/). The plugin connects local LLM harnesses (Claude Code, AI Codex, Antigravity) to a physical Android/iOS test stack through a filesystem mailbox.
 
-The orchestration runtime lives only at `maestro-e2e-plugin/orchestrator_core/`. There is no separate root-level `orchestrator_core/` copy.
+Package name: `maestro-e2e-workflow`.
 
 ## Features
 
-- **Harness-Agnostic**: Can be run by any major local AI agent through a simple mailbox (`.agentic/e2e_prompts/`) filesystem interface.
-- **5-Stage Pipeline**:
-  1. **Domain Discovery**: Analyzes Dart source code to document business logic (with Adversarial focus).
-  2. **Test Plan Author**: Writes BDD/Gherkin scenarios.
-  3. **Widget Blueprint**: Extracts rigorous UI selectors and semantics from the codebase.
-  4. **Maestro Implementer**: Writes the final `.flow.yaml` and `.subflow.yaml` files.
-  5. **Execution & Self-Healing**: Runs the flows on a real device, uses `maestro hierarchy` to debug failures, auto-corrects the code, and catalogs learnings into `common-pitfalls.md`.
-- **Self-Healing Resume Loop**: If Maestro physical execution or static linting fails, the orchestrator catches the stack trace and dispatches the task back to the agent in `correcao` mode for automatic remediation.
-- **Hermetic Scaffolding**: Provides an `/e2e init` command to eject portable bash scripts, emulators, and prompt templates directly into your project's repository for CI/CD compatibility.
+- **Harness-agnostic** — any local AI agent can drive the loop via `.agentic/e2e_prompts/`
+- **Five-stage pipeline**
+  1. **Domain discovery** — document business logic from Dart sources (adversarial focus)
+  2. **Test plan** — BDD/Gherkin scenarios
+  3. **Widget blueprint** — UI selectors and semantics from the codebase
+  4. **Maestro implementer** — `.flow.yaml` / `.subflow.yaml` artifacts
+  5. **Execution & self-healing** — run on device, debug with `maestro hierarchy`, auto-correct, and record learnings in `common-pitfalls.md`
+- **Self-healing resume** — on Maestro or lint failure, the orchestrator captures the stack trace and redispatches in *correcao* (remediation) mode
+- **Hermetic scaffolding** — `/e2e init` ejects portable bash scripts, emulator helpers, and prompt templates into your repo for CI use
+
+## Requirements
+
+- Python 3
+- A Flutter project target
+- [Maestro](https://maestro.mobile.dev/) CLI
+- Android emulator / iOS simulator (or a connected device) for stage 5
 
 ## Installation
 
-Install the plugin globally for your local AI harness:
+Install the plugin for your local AI harnesses:
 
 ```bash
 cd maestro-e2e-plugin
 python3 bootstrap.py --target all-agents
 ```
 
+Re-run bootstrap after upgrades so the global `maestro-e2e` wrapper stays in sync.
+
 ## Usage
 
-### 1. Initialize a Project
-Run this once per Flutter repository to scaffold the hermetic test environment:
+### 1. Initialize a project
+
+Run once per Flutter repository to scaffold the hermetic test environment:
+
 ```bash
 maestro-e2e --init
 ```
-This ejects the bash scripts into `e2e_test/scripts/e2e` and the customizable LLM prompt templates into `e2e_test/prompts/`.
 
-### 2. Run the Orchestrator
-Trigger the orchestrator against a specific module and business flow:
+This ejects scripts into `e2e_test/scripts/e2e` and LLM prompt templates into `e2e_test/prompts/`.
+
+### 2. Run the orchestrator
+
+Point the orchestrator at a module and business flow:
+
 ```bash
 maestro-e2e --module <your_module> --flow "<business_flow_name>"
 ```
 
-### 3. Evaluate Artifacts Manually (Optional)
-To test the Quality Gate on a specific artifact and trigger the self-healing error log:
+### 3. Evaluate an artifact (optional)
+
+Run the quality gate on a single artifact and, on failure, write the self-healing error log:
+
 ```bash
 maestro-e2e evaluate --stage stage_3 --file "e2e_test/modules/.../Happy Path.flow.yaml"
 ```
 
 ## Architecture
 
-The Orchestrator follows a stateless, event-driven pattern. 
-1. `router.py` analyzes the `e2e_test/` directory to detect drift or missing artifacts.
-2. If an artifact is missing, it compiles a massive context prompt using `adapters.py`.
-3. It writes the prompt to `.agentic/e2e_prompts/stage_X.prompt.md` for the AI harness to pick up.
-4. If a stage fails the Quality Gate (`evaluator.py`), it drops an `.error.log` into the mailbox, triggering a self-healing iteration on the next run.
+The orchestrator is a stateless, mailbox-driven loop:
+
+1. `router.py` inspects `e2e_test/` for missing or drifted artifacts.
+2. For the next incomplete stage, `adapters.py` compiles context and writes `.agentic/e2e_prompts/stage_X.prompt.md`.
+3. The AI harness picks up the prompt, produces the artifact, and returns control.
+4. `evaluator.py` runs the quality gate; on failure it drops `.error.log` into the mailbox so the next run enters remediation. On PASS, the stage error log is cleared.
+
+Canonical engine path: `maestro-e2e-plugin/orchestrator_core/` (no root-level duplicate).
