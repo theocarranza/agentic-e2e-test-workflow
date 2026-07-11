@@ -6,6 +6,17 @@
     "name": "developer"
   },
   "skills": "./skills/",
+  "agents": "./agents/",
+  "commands": "./commands/",
+  "mcp_servers": {
+    "maestro": {
+      "command": "python3",
+      "args": [
+        "-u",
+        "./mcp/server.py"
+      ]
+    }
+  },
   "interface": {
     "displayName": "Maestro E2E Orchestrator",
     "shortDescription": "Generates and validates Maestro flows.",
