@@ -1,22 +1,64 @@
 """MCP server boot_emulator must invoke the real boot script and surface failures."""
 import importlib.util
+import json
 import subprocess
 import sys
+import types
 from pathlib import Path
 from unittest.mock import patch
 
 import conftest
 
 PLUGIN_ROOT = conftest.PLUGIN_ROOT
-SERVER_PATH = PLUGIN_ROOT / "mcp" / "server.py"
+SERVER_PATH = PLUGIN_ROOT / "maestro_mcp" / "server.py"
 
 
 def _load_boot_emulator():
+    class FakeFastMCP:
+        def __init__(self, _name):
+            pass
+
+        def tool(self):
+            return lambda function: function
+
+        def run_stdio(self):
+            pass
+
+    mcp_package = types.ModuleType("mcp")
+    mcp_package.__path__ = []
+    mcp_server_package = types.ModuleType("mcp.server")
+    mcp_server_package.__path__ = []
+    fastmcp_module = types.ModuleType("mcp.server.fastmcp")
+    fastmcp_module.FastMCP = FakeFastMCP
+
     spec = importlib.util.spec_from_file_location("maestro_mcp_server", SERVER_PATH)
     server = importlib.util.module_from_spec(spec)
+    with patch.dict(
+        sys.modules,
+        {
+            "mcp": mcp_package,
+            "mcp.server": mcp_server_package,
+            "mcp.server.fastmcp": fastmcp_module,
+            "maestro_mcp_server": server,
+        },
+    ):
+        spec.loader.exec_module(server)
     sys.modules["maestro_mcp_server"] = server
-    spec.loader.exec_module(server)
     return server.boot_emulator
+
+
+def test_mcp_server_paths_do_not_shadow_dependency_package():
+    plugin_manifest = json.loads((PLUGIN_ROOT / "plugin.json").read_text(encoding="utf-8"))
+    codex_manifest = json.loads(
+        (PLUGIN_ROOT / ".codex-plugin" / "plugin.json").read_text(encoding="utf-8")
+    )
+    mcp_config = json.loads((PLUGIN_ROOT / "mcp_config.json").read_text(encoding="utf-8"))
+
+    assert plugin_manifest["mcp_servers"]["maestro"]["args"][-1] == "./maestro_mcp/server.py"
+    assert codex_manifest["mcp_servers"]["maestro"]["args"][-1] == "./maestro_mcp/server.py"
+    assert mcp_config["mcpServers"]["maestro"]["args"][-1] == "maestro_mcp/server.py"
+    assert SERVER_PATH.is_file()
+    assert not (PLUGIN_ROOT / "mcp").exists()
 
 
 def test_boot_emulator_uses_boot_emulator_script(tmp_path):
