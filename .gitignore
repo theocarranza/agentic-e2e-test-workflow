@@ -10,3 +10,6 @@ maestro-e2e-plugin/e2e_test/modules/
 # Obsidian workspace state (machine-local)
 **/.obsidian/workspace.json
 **/.obsidian/workspace-mobile.json
+
+# Plugin-owned per-workspace runtime state (multi-model persistence)
+maestro-e2e-plugin/projects/

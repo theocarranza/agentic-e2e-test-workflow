@@ -57,9 +57,10 @@ def handle_task_failed(state: QueueState, event: Event, max_retries: int = 3) ->
     task = state.tasks[task_id]
     new_retry_count = task.retry_count + 1
     new_critiques = task.critiques + [critique] if critique else task.critiques
-    
-    # Circuit Breaker: If max retries reached, block and require human review
-    if new_retry_count >= max_retries:
+
+    # Circuit Breaker: prefer per-task max_retries when set
+    retry_limit = task.max_retries if task.max_retries is not None else max_retries
+    if new_retry_count >= retry_limit:
         new_task_state = TaskState.BLOCKED_REQUIRES_REVIEW
     else:
         # Reflection Loop: Inject back into ready queue with new critique

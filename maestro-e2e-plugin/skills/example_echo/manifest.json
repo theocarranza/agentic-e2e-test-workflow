@@ -1,0 +1,33 @@
+{
+  "name": "example_echo",
+  "version": "1.0.0",
+  "description": "Example universal skill that echoes input text.",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": ["text"]
+  },
+  "outputs": {
+    "type": "text"
+  },
+  "tools": [
+    {
+      "name": "echo_text",
+      "description": "Echo input text through a portable CLI executable.",
+      "command": "echo_text",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string"
+          }
+        },
+        "required": ["text"]
+      }
+    }
+  ]
+}
