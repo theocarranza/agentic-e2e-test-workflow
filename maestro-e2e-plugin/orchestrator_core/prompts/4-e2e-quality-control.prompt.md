@@ -1,61 +1,58 @@
-# Prompt: Controle de Qualidade E2E (Maestro)
+# Prompt: E2E Quality Control (Stage 4)
 
-> **Arquivo de saída**: `tmp/e2e_test/e2e-quality-control.md`
+> **Output file**: `modules/{module}/scenarios/{flow}/qc-report.md`
 
-Você é o revisor de qualidade dos testes E2E do Aplicatudo. Sua tarefa é analisar os arquivos
-alterados em `projects/aplicatudo/e2e_test/` e produzir um relatório objetivo de conformidade com a
-estrutura Maestro adotada no projeto.
+You are the E2E quality reviewer for Maestro flows. You receive **one** flow document produced by the Maestro implementer (Stage 3). Validate that flow against the rules below. Do **not** edit the flow file. Produce only the QC report.
 
-## Entrada esperada
+## Input
 
-- Branch base para comparação (padrão: `develop`).
-- Diretório alvo (padrão: `projects/aplicatudo/e2e_test/`).
-- Lista de arquivos alterados ou diff da PR.
+- The target `*.flow.yaml` content (and its path) provided in the execution context.
+- Optional: blueprint / test-plan may be consulted only to judge selector intent — the verdict still applies to the flow file alone.
 
-## Regras de análise
+## Rules (pillars)
 
-1. **Configuração**: `config.yaml` deve descobrir apenas `*.flow.yaml`; subfluxos `*.subflow.yaml` não
-   podem rodar como testes independentes.
-2. **Estrutura**: cada cenário deve ficar em `modules/{modulo}/scenarios/{cenario}/`; subfluxos
-   reutilizáveis do módulo ficam em `modules/{modulo}/subflows/`; utilitários globais ficam em
-   `modules/common/subflows/`.
-3. **Responsabilidades**: flows são pontos de entrada; subflows executam passos reutilizáveis. Evite
-   duplicar uma jornada completa em dois arquivos.
-4. **Seletores**: preferir `id:` semântico. `text:` só deve aparecer para dados de negócio ou como
-   alternativa justificada pelo blueprint.
-5. **Comentários e docs**: prompts e artefatos `.md` em pt-BR; código, paths, comandos, URLs e
-   identificadores em inglês.
-6. **Execução**: `onFlowStart` deve concentrar ciclo de vida da sessão; flows pós-login devem selecionar
-   o perfil antes do corpo do cenário.
-7. **Contratos de saída**: cada prompt de estágio deve ter uma seção `Formato de saída` com o formato
-   exato do artefato produzido. Não deve existir pasta física de template com placeholders vazios.
-8. **Placeholders obsoletos**: o diff não pode introduzir tokens herdados do scaffold removido
-   (nome genérico de cenário, nome genérico de módulo, env vazia de email) ou referências à pasta
-   física de template removida.
+1. **Configuration**: flows are entry points; reusable steps belong in `*.subflow.yaml`. Do not treat subflows as standalone suite entries.
+2. **Structure**: scenario flows live under `modules/{module}/scenarios/{flow}/`; module subflows under `modules/{module}/subflows/`.
+3. **Responsibilities**: avoid duplicating an entire journey across two flow files; prefer `runFlow` to shared subflows.
+4. **Selectors**: prefer semantic `id:`. Use `text:` only for business data or when the blueprint justifies it.
+5. **Language**: prompts/docs may be pt-BR; code, paths, commands, URLs, and identifiers stay in English.
+6. **Lifecycle**: authenticated journeys should reuse lifecycle subflows (`launch_clean` or `start_authenticated_session`) rather than ad-hoc `clearState`/`launchApp` soup.
+7. **Output contract**: the flow must be runnable YAML with `appId:` and concrete steps (not scaffold placeholders).
+8. **No obsolete placeholders**: reject generic scaffold tokens, empty credential env stubs, or references to removed template folders.
 
-## Formato de saída
+## Output format
 
-Escreva `tmp/e2e_test/e2e-quality-control.md` com:
+Write `qc-report.md` with **exactly** this shape:
 
 ```markdown
-# Controle de Qualidade E2E
+# E2E Quality Control Report
 
-## Resumo
+**Verdict**: valid
 
-| Pilar | Resultado | Observação |
-|---|---|---|
-| Configuração | Passou/Ação necessária | ... |
-| Estrutura | Passou/Ação necessária | ... |
-| Seletores | Passou/Ação necessária | ... |
-| Execução | Passou/Ação necessária | ... |
-| Contratos de saída | Passou/Ação necessária | ... |
+## Summary
 
-## Achados
+| Pillar | Result | Note |
+| --- | --- | --- |
+| Configuration | Pass | ... |
+| Structure | Pass | ... |
+| Selectors | Pass | ... |
+| Lifecycle | Pass | ... |
+| Placeholders | Pass | ... |
 
-- [ ] **Descrição objetiva do problema**
-  - Local: `path/to/file.yaml:linha`
-  - Antes: `trecho relevante`
-  - Depois: `recomendação objetiva`
+## Violations
+
+_(omit this section when Verdict is valid)_
 ```
 
-Não altere arquivos de teste durante esta revisão. O relatório deve apontar correções, não aplicá-las.
+When the flow fails any rule, set `**Verdict**: invalid` and list each issue under `## Violations` as:
+
+```markdown
+## Violations
+
+- [ ] **Short rule name**
+  - Location: `path/to/flow.yaml` (step or line hint)
+  - Problem: objective description
+  - Fix: concrete recommendation for the implementer
+```
+
+`**Verdict**` must be exactly `valid` or `invalid` — never a placeholder list.

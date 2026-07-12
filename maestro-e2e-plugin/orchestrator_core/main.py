@@ -12,13 +12,14 @@ def init_workflow(module: str, flow: str = None, dry_run: bool = False, manual: 
         approval_mode="manual" if manual else "auto"
     )
     
-    # Define the 5 strict pipeline stages as dependencies
+    # Define the 6 pipeline stages as dependencies (F5: QC=4, execution=5)
     tasks = {
         "stage_0": Task(id="stage_0", skill_name="domain_discovery", dependencies=[]),
         "stage_1": Task(id="stage_1", skill_name="test_plan_author", dependencies=["stage_0"]),
         "stage_2": Task(id="stage_2", skill_name="widget_blueprint", dependencies=["stage_1"]),
         "stage_3": Task(id="stage_3", skill_name="maestro_implementer", dependencies=["stage_2"]),
-        "stage_4": Task(id="stage_4", skill_name="execution_and_healing", dependencies=["stage_3"]),
+        "stage_4": Task(id="stage_4", skill_name="e2e_quality_control", dependencies=["stage_3"]),
+        "stage_5": Task(id="stage_5", skill_name="execution_and_healing", dependencies=["stage_4"]),
     }
     
     # We pass an empty event list initially
@@ -59,6 +60,10 @@ def run_orchestrator(args) -> None:
     elif routing_event.type == "PipelineUpToDateEvent":
         print(f"\n[+] All artifacts up to date! Proceeding to E2E execution suite...")
         # Phase 4 triggers here: run-e2e.sh
+    elif routing_event.type == "CircuitBreakerTrippedEvent":
+        print(f"\n[!] Circuit breaker: {routing_event.payload.get('message')}")
+        print("[!] Human review required before retrying this flow.")
+        return
     else:
         task_id = routing_event.payload.get("task_id")
         mode = routing_event.payload.get("mode")
@@ -90,7 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
     evaluate_parser.add_argument(
         "--stage",
         required=True,
-        help="Stage ID (stage_0..stage_4)",
+        help="Stage ID (stage_0..stage_5)",
     )
     evaluate_parser.add_argument(
         "--file",

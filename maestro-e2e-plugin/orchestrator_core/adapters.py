@@ -18,7 +18,8 @@ def get_stage_prompt_file(stage_id: str, prompts_dir: Path) -> Path:
         "stage_1": "1-test-plan-author.prompt.md",
         "stage_2": "2-widget-blueprint.prompt.md",
         "stage_3": "3-maestro-implementer.prompt.md",
-        "stage_4": "4-execution-and-healing.prompt.md",  # F1
+        "stage_4": "4-e2e-quality-control.prompt.md",  # F5: LLM QC
+        "stage_5": "4-execution-and-healing.prompt.md",  # F5: was stage_4
     }
     if stage_id not in mapping:
         raise ValueError(f"Unknown stage: {stage_id}")
@@ -106,19 +107,36 @@ def build_stage_context(target: WorkflowTarget, stage_id: str, mode: str, prompt
         context_blocks.append("[Widget tree diagnostic placeholder]")
         
     elif stage_id == "stage_3":
-        # Needs test-plan.md + blueprint.md
+        # Needs test-plan.md + blueprint.md; QC feedback when resubmitting after invalid.
         test_plan_path = get_artifact_path(target, "stage_1", workspace_dir)
         blueprint_path = get_artifact_path(target, "stage_2", workspace_dir)
         context_blocks.append("--- INPUT: TEST PLAN (test-plan.md) ---")
         context_blocks.append(load_file_content(test_plan_path))
         context_blocks.append("--- INPUT: WIDGET BLUEPRINT (blueprint.md) ---")
         context_blocks.append(load_file_content(blueprint_path))
+        qc_path = get_artifact_path(target, "stage_4", workspace_dir)
+        if mode == "correcao" and qc_path.exists():
+            context_blocks.append("--- INPUT: QC REPORT (qc-report.md) ---")
+            context_blocks.append(load_file_content(qc_path))
+        qc_error = Path.cwd() / ".agentic" / "e2e_prompts" / "stage_4.error.log"
+        if mode == "correcao" and qc_error.exists():
+            context_blocks.append("--- INPUT: QC QUALITY GATE FEEDBACK ---")
+            context_blocks.append(f"```text\n{qc_error.read_text(encoding='utf-8')}\n```")
 
     elif stage_id == "stage_4":
-        # Flow by path (Stage 4 edits on disk during healing); upstream artifacts consultable.
+        # LLM QC reviews one flow document against declared structural rules.
+        flow_path = get_artifact_path(target, "stage_3", workspace_dir)
+        context_blocks.append("--- INPUT: TARGET FLOW ---")
+        context_blocks.append(f"Path: {flow_path}")
+        context_blocks.append(f"```yaml\n{load_file_content(flow_path)}\n```")
+
+    elif stage_id == "stage_5":
+        # Flow by path (Stage 5 edits on disk during healing); upstream artifacts consultable.
         flow_path = get_artifact_path(target, "stage_3", workspace_dir)
         context_blocks.append("--- INPUT: TARGET FLOW (path) ---")
         context_blocks.append(str(flow_path))
+        context_blocks.append("--- INPUT: QC REPORT (qc-report.md) ---")
+        context_blocks.append(load_file_content(get_artifact_path(target, "stage_4", workspace_dir)))
         context_blocks.append("--- INPUT: WIDGET BLUEPRINT (blueprint.md) ---")
         context_blocks.append(load_file_content(get_artifact_path(target, "stage_2", workspace_dir)))
         context_blocks.append("--- INPUT: TEST PLAN (test-plan.md) ---")
