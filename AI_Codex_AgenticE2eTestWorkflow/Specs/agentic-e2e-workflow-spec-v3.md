@@ -182,7 +182,7 @@ Directory shape `e2e_test/modules/{m}/…` (now enforced in code by `router.get_
 - **F2 · DRIFT (blocking AC-8):** root `orchestrator_core/` vs plugin copy — `adapters/evaluator/executor/main/router.py` all differ. One must become canonical; the other removed or generated. (Root copy also lacks `prompts/` and `init_scaffold.py`.)
 - **F3 · DUP:** `scripts/lib-*.sh` duplicated at `scripts/` and `scripts/e2e/` inside the plugin.
 - **F4 · HYGIENE:** `__pycache__/*.pyc` committed (both copies). Add `.gitignore`.
-- **F5 · AMBIGUITY:** two stage-4 prompts (`4-e2e-quality-control` vs `4-execution-and-healing`); `main.py` binds `stage_4 → execution_and_healing`; the QC prompt is currently unrouted. Decide: fold QC into evaluator/S4, or make it a distinct gate stage.
+- **F5 · RESOLVED (2026-07-11):** QC is stage_4 (LLM); execution/healing is stage_5. Former ambiguity: (`4-e2e-quality-control` vs `4-execution-and-healing`); `main.py` binds `stage_4 → execution_and_healing`; the QC prompt is currently unrouted. Decide: fold QC into evaluator/S4, or make it a distinct gate stage.
 - **F6 · FRAGILITY:** evaluator gates are literal string matches with parallel en/pt variants (e.g. table-header exact match) — brittle against benign formatting drift; consider structural checks (regex/AST/markdown parse).
 - **F7 · CONTEXT RISK:** S0 fallback sweeps **entire `lib/`** when the module glob misses — token blowup on large repos; prefer fail-fast + `RequireModulePathEvent`.
 - **F8 · PLACEHOLDER:** S2 context injects `[Widget tree diagnostic placeholder]` — blueprint quality currently rides on the prompt alone.
